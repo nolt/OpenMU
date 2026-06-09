@@ -1279,6 +1279,24 @@ namespace MUnique.OpenMU.Web.AdminPanel.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Choose file.
+        /// </summary>
+        public static string ChooseFile {
+            get {
+                return ResourceManager.GetString("ChooseFile", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No file selected.
+        /// </summary>
+        public static string NoFileSelected {
+            get {
+                return ResourceManager.GetString("NoFileSelected", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Stop.
         /// </summary>
         public static string Stop {

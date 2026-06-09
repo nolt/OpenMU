@@ -37,6 +37,8 @@ public sealed partial class Install
     /// </summary>
     public IFileListEntry? ImportConfigurationFile { get; set; }
 
+    private byte[]? _importConfigurationData;
+
     /// <summary>
     /// Gets a value indicating whether this instance is installing.
     /// </summary>
@@ -83,9 +85,9 @@ public sealed partial class Install
         await this.InvokeAsync(this.StateHasChanged).ConfigureAwait(false);
         try
         {
-            if (this.ImportConfigurationFile is { } importFile)
+            if (this._importConfigurationData is { } configurationData)
             {
-                await this.ImportConfigurationAsync(importFile).ConfigureAwait(false);
+                await this.ImportConfigurationAsync(configurationData).ConfigureAwait(false);
             }
             else
             {
@@ -99,18 +101,31 @@ public sealed partial class Install
         }
     }
 
-    private async Task ImportConfigurationAsync(IFileListEntry importFile)
+    private async Task ImportConfigurationAsync(byte[] configurationData)
     {
-        using var memoryStream = new MemoryStream();
-        await importFile.Data.CopyToAsync(memoryStream).ConfigureAwait(false);
-        memoryStream.Position = 0;
-
+        using var memoryStream = new MemoryStream(configurationData);
         await this.SetupService.ImportGameConfigurationAsync(memoryStream, this.SelectedVersion!.Key, (byte)this.GameServerCount).ConfigureAwait(false);
     }
 
-    private void OnImportFileSelected(IFileListEntry[] files)
+    private async Task OnImportFileSelected(IFileListEntry[] files)
     {
-        this.ImportConfigurationFile = files.FirstOrDefault();
+        var file = files.FirstOrDefault();
+        if (file is null)
+        {
+            this.ImportConfigurationFile = null;
+            this._importConfigurationData = null;
+            return;
+        }
+
+        // Read the file content immediately, while the input element is still attached.
+        // BlazorInputFile streams the data from the DOM element through JS interop. If we
+        // deferred the read until "Start import", the re-render caused by setting
+        // ImportConfigurationFile (which hides the test accounts option) would detach the
+        // element and the stream would fail with a "_blazorFilesById" null reference.
+        using var memoryStream = new MemoryStream();
+        await file.Data.CopyToAsync(memoryStream).ConfigureAwait(false);
+        this._importConfigurationData = memoryStream.ToArray();
+        this.ImportConfigurationFile = file;
     }
 
     private void OnSelectVersion(string key)

@@ -64,7 +64,12 @@ else
         <h2>@Resources.ImportConfigurationQuestion</h2>
         <div>
             <label for="importConfigurationFile" class="form-label">@Resources.ImportConfigurationHint</label>
-            <BlazorInputFile.InputFile id="importConfigurationFile" class="form-control" OnChange="this.OnImportFileSelected" />
+            <div class="d-flex align-items-center gap-2">
+                @* Hide the native file input (its "no file chosen" text is rendered by the browser in its own locale) and use a custom button plus our own file-name label instead. *@
+                <label class="btn btn-secondary mb-0" for="importConfigurationFile">@Resources.ChooseFile</label>
+                <BlazorInputFile.InputFile id="importConfigurationFile" style="display:none" OnChange="this.OnImportFileSelected" />
+                <span>@(this.ImportConfigurationFile?.Name ?? Resources.NoFileSelected)</span>
+            </div>
         </div>
     </p>
 
