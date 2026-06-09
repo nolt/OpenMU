@@ -172,6 +172,24 @@ public class ReferenceResolvingConverter<T> : JsonConverter<T>
         }
         else
         {
+            // Collections are written either as a plain array (the shape produced by the
+            // database json query which the runtime loader consumes) or, by the
+            // reference-preserving serializer, wrapped as { "$id": "..", "$values": [ .. ] }
+            // (the shape of an exported/downloaded configuration). Support both so that an
+            // exported configuration can be deserialized (imported) again.
+            var wrapped = reader.TokenType == JsonTokenType.StartObject;
+            if (wrapped)
+            {
+                while (reader.Read() && reader.TokenType != JsonTokenType.StartArray)
+                {
+                    if (reader.TokenType == JsonTokenType.EndObject)
+                    {
+                        // A wrapper without a "$values" array - nothing to add.
+                        return;
+                    }
+                }
+            }
+
             if (reader.TokenType == JsonTokenType.StartArray)
             {
                 while (true)
@@ -189,6 +207,16 @@ public class ReferenceResolvingConverter<T> : JsonConverter<T>
                     if (JsonSerializer.Deserialize(ref reader, handler.PropertyType, options) is { } collectionItem)
                     {
                         handler.Adder!(item, collectionItem);
+                    }
+                }
+
+                if (wrapped)
+                {
+                    // Consume the wrapper's closing EndObject so that the reader ends on the
+                    // last token of the property value, as the caller's read loop expects.
+                    while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+                    {
+                        // skip any trailing tokens until the wrapper object ends.
                     }
                 }
             }

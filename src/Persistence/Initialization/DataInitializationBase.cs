@@ -15,6 +15,7 @@ using MUnique.OpenMU.GameServer.MessageHandler;
 using MUnique.OpenMU.Network;
 using MUnique.OpenMU.Network.PlugIns;
 using MUnique.OpenMU.Persistence.Initialization.Updates;
+using MUnique.OpenMU.Persistence.Json;
 using MUnique.OpenMU.PlugIns;
 
 /// <summary>
@@ -27,6 +28,7 @@ public abstract class DataInitializationBase : IDataInitializationPlugIn
     private readonly ILoggerFactory _loggerFactory;
     private GameConfiguration? _gameConfiguration;
     private IContext? _context;
+    private GameConfiguration? _configurationToImport;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataInitializationBase" /> class.
@@ -81,6 +83,27 @@ public abstract class DataInitializationBase : IDataInitializationPlugIn
     protected abstract IInitializer? TestAccountsInitializer { get; }
 
     /// <summary>
+    /// Imports the given game configuration instead of initializing a new one, but creates all
+    /// surrounding definitions (system configuration, client and server definitions) like a
+    /// regular installation does. This effectively restores a previously downloaded configuration
+    /// onto a freshly (re)created database.
+    /// </summary>
+    /// <param name="numberOfGameServers">The number of game servers.</param>
+    /// <param name="configurationToImport">The game configuration which should be imported.</param>
+    public async Task ImportConfigurationAsync(byte numberOfGameServers, GameConfiguration configurationToImport)
+    {
+        this._configurationToImport = configurationToImport ?? throw new ArgumentNullException(nameof(configurationToImport));
+        try
+        {
+            await this.CreateInitialDataAsync(numberOfGameServers, false).ConfigureAwait(false);
+        }
+        finally
+        {
+            this._configurationToImport = null;
+        }
+    }
+
+    /// <summary>
     /// Creates the initial data for a server.
     /// </summary>
     /// <param name="numberOfGameServers">The number of game servers.</param>
@@ -102,14 +125,25 @@ public abstract class DataInitializationBase : IDataInitializationPlugIn
         this.Context = contextWithConfiguration;
         this.CreateGameClientDefinition();
         await this.CreateChatServerDefinitionAsync().ConfigureAwait(false);
-        this.GameConfigurationInitializer.Initialize();
+        if (this._configurationToImport is { } configurationToImport)
+        {
+            new ConfigurationImporter(this.Context).ImportInto(this.GameConfiguration, configurationToImport);
+        }
+        else
+        {
+            this.GameConfigurationInitializer.Initialize();
+        }
 
         var gameServerConfiguration = this.CreateGameServerConfiguration(this.GameConfiguration.Maps);
         await this.CreateGameServerDefinitionsAsync(gameServerConfiguration, numberOfGameServers).ConfigureAwait(false);
         await this.CreateConnectServerDefinitionAsync().ConfigureAwait(false);
         await this.Context.SaveChangesAsync().ConfigureAwait(false);
 
-        this.GameMapsInitializer.SetSafezoneMaps();
+        if (this._configurationToImport is null)
+        {
+            // An imported configuration already contains the safezone references of its maps.
+            this.GameMapsInitializer.SetSafezoneMaps();
+        }
 
         if (createTestAccounts)
         {
@@ -128,6 +162,25 @@ public abstract class DataInitializationBase : IDataInitializationPlugIn
         serviceContainer.AddService(typeof(IPersistenceContextProvider), this._persistenceContextProvider);
         var plugInManager = new PlugInManager(null, this._loggerFactory, serviceContainer, referenceHandler);
         plugInManager.DiscoverAndRegisterPlugIns();
+
+        // When importing, the plugin configurations are part of the imported configuration already.
+        if (this._configurationToImport is null)
+        {
+            this.CreatePlugInConfigurations(plugInManager, referenceHandler);
+        }
+
+        this.AddAllUpdateEntries(plugInManager);
+
+        await this.Context.SaveChangesAsync().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Creates the game client definition.
+    /// </summary>
+    protected abstract void CreateGameClientDefinition();
+
+    private void CreatePlugInConfigurations(PlugInManager plugInManager, ReferenceHandler referenceHandler)
+    {
         plugInManager.KnownPlugInTypes.ForEach(plugInType =>
         {
             var plugInConfiguration = this.Context.CreateNew<PlugInConfiguration>();
@@ -174,16 +227,7 @@ public abstract class DataInitializationBase : IDataInitializationPlugIn
                 plugInConfiguration.IsActive = false;
             }
         });
-
-        this.AddAllUpdateEntries(plugInManager);
-
-        await this.Context.SaveChangesAsync().ConfigureAwait(false);
     }
-
-    /// <summary>
-    /// Creates the game client definition.
-    /// </summary>
-    protected abstract void CreateGameClientDefinition();
 
     private void CreateDefaultPlugInConfiguration(Type plugInType, PlugInConfiguration plugInConfiguration, ReferenceHandler referenceHandler)
     {

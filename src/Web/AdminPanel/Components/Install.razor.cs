@@ -4,6 +4,8 @@
 
 namespace MUnique.OpenMU.Web.AdminPanel.Components;
 
+using System.IO;
+using BlazorInputFile;
 using Microsoft.AspNetCore.Components;
 using MUnique.OpenMU.Interfaces;
 using MUnique.OpenMU.Persistence.Initialization;
@@ -28,6 +30,12 @@ public sealed partial class Install
     /// Gets or sets a value indicating whether to create test accounts.
     /// </summary>
     public bool CreateTestAccounts { get; set; }
+
+    /// <summary>
+    /// Gets or sets the optional configuration file to import instead of initializing a new
+    /// configuration. The file is expected to be a previously downloaded game configuration json.
+    /// </summary>
+    public IFileListEntry? ImportConfigurationFile { get; set; }
 
     /// <summary>
     /// Gets a value indicating whether this instance is installing.
@@ -75,13 +83,34 @@ public sealed partial class Install
         await this.InvokeAsync(this.StateHasChanged).ConfigureAwait(false);
         try
         {
-            await this.SetupService.CreateDatabaseAsync(() => this.SelectedVersion!.CreateInitialDataAsync((byte)this.GameServerCount, this.CreateTestAccounts)).ConfigureAwait(false);
+            if (this.ImportConfigurationFile is { } importFile)
+            {
+                await this.ImportConfigurationAsync(importFile).ConfigureAwait(false);
+            }
+            else
+            {
+                await this.SetupService.CreateDatabaseAsync(() => this.SelectedVersion!.CreateInitialDataAsync((byte)this.GameServerCount, this.CreateTestAccounts)).ConfigureAwait(false);
+            }
         }
         finally
         {
             this.IsInstalled = true;
             this.IsInstalling = false;
         }
+    }
+
+    private async Task ImportConfigurationAsync(IFileListEntry importFile)
+    {
+        using var memoryStream = new MemoryStream();
+        await importFile.Data.CopyToAsync(memoryStream).ConfigureAwait(false);
+        memoryStream.Position = 0;
+
+        await this.SetupService.ImportGameConfigurationAsync(memoryStream, this.SelectedVersion!.Key, (byte)this.GameServerCount).ConfigureAwait(false);
+    }
+
+    private void OnImportFileSelected(IFileListEntry[] files)
+    {
+        this.ImportConfigurationFile = files.FirstOrDefault();
     }
 
     private void OnSelectVersion(string key)

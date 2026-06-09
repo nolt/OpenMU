@@ -4,11 +4,13 @@
 
 namespace MUnique.OpenMU.Web.AdminPanel.Services;
 
+using System.IO;
 using System.Threading;
 using MUnique.OpenMU.DataModel.Configuration;
 using MUnique.OpenMU.Network.PlugIns;
 using MUnique.OpenMU.Persistence;
 using MUnique.OpenMU.Persistence.Initialization;
+using MUnique.OpenMU.Persistence.Json;
 using MUnique.OpenMU.PlugIns;
 using Nito.AsyncEx.Synchronous;
 
@@ -134,5 +136,22 @@ public class SetupService
         {
             await eventHandler.Invoke().ConfigureAwait(false);
         }
+    }
+
+    /// <summary>
+    /// (Re)creates the database and imports the given game configuration into it, creating the
+    /// surrounding server definitions for the selected game version like an installation does.
+    /// </summary>
+    /// <param name="configurationJson">A stream with the downloaded game configuration json.</param>
+    /// <param name="versionKey">The key of the game version to use for the server definitions.
+    /// If <c>null</c> or unknown, the first available version is used.</param>
+    /// <param name="numberOfGameServers">The number of game servers to create.</param>
+    public async Task ImportGameConfigurationAsync(Stream configurationJson, string? versionKey, byte numberOfGameServers)
+    {
+        var version = this.Versions.FirstOrDefault(v => v.Key == versionKey) ?? this.Versions.First();
+        var configuration = configurationJson.FromJson<Persistence.BasicModel.GameConfiguration>()
+            ?? throw new InvalidOperationException("The provided file could not be read as a game configuration.");
+
+        await this.CreateDatabaseAsync(() => version.ImportConfigurationAsync(numberOfGameServers, configuration)).ConfigureAwait(false);
     }
 }

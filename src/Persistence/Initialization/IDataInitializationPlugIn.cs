@@ -5,6 +5,7 @@
 namespace MUnique.OpenMU.Persistence.Initialization;
 
 using System.Runtime.InteropServices;
+using MUnique.OpenMU.DataModel.Configuration;
 using MUnique.OpenMU.PlugIns;
 
 /// <summary>
@@ -25,4 +26,13 @@ public interface IDataInitializationPlugIn : IStrategyPlugIn<string>
     /// <param name="numberOfGameServers">The number of game servers.</param>
     /// <param name="createTestAccounts">If set to <c>true</c>, test accounts should be created.</param>
     Task CreateInitialDataAsync(byte numberOfGameServers, bool createTestAccounts);
+
+    /// <summary>
+    /// Imports the given game configuration instead of initializing a new one, but creates all
+    /// surrounding definitions (system configuration, client and server definitions) like a
+    /// regular installation does.
+    /// </summary>
+    /// <param name="numberOfGameServers">The number of game servers.</param>
+    /// <param name="configurationToImport">The game configuration which should be imported.</param>
+    Task ImportConfigurationAsync(byte numberOfGameServers, GameConfiguration configurationToImport);
 }
