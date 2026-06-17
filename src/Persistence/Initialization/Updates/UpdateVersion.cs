@@ -422,4 +422,9 @@ public enum UpdateVersion
     /// The version of the <see cref="AddRandomExperienceConfigAttributesPlugInSeason6"/>.
     /// </summary>
     AddRandomExperienceConfigAttributesSeason6 = 83,
+
+    /// <summary>
+    /// The version of the <see cref="AddMissingMerchantStoresPlugIn"/>.
+    /// </summary>
+    AddMissingMerchantStores = 84,
 }
