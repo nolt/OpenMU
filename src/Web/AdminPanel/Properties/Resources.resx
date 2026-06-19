@@ -525,6 +525,21 @@
   <data name="StartInstall" xml:space="preserve">
     <value>Start install</value>
   </data>
+  <data name="StartImport" xml:space="preserve">
+    <value>Start import</value>
+  </data>
+  <data name="ImportConfigurationQuestion" xml:space="preserve">
+    <value>Import an existing configuration? (optional)</value>
+  </data>
+  <data name="ImportConfigurationHint" xml:space="preserve">
+    <value>Select a previously downloaded game configuration json file - use the "Full configuration" download (the complete configuration) - to restore it instead of creating a new configuration. The selected game version is still used for the server definitions.</value>
+  </data>
+  <data name="ChooseFile" xml:space="preserve">
+    <value>Choose file</value>
+  </data>
+  <data name="NoFileSelected" xml:space="preserve">
+    <value>No file selected</value>
+  </data>
   <data name="Remove" xml:space="preserve">
     <value>Remove</value>
   </data>

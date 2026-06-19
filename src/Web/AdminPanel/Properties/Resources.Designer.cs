@@ -1250,7 +1250,52 @@ namespace MUnique.OpenMU.Web.AdminPanel.Properties {
                 return ResourceManager.GetString("StartInstall", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Start import.
+        /// </summary>
+        public static string StartImport {
+            get {
+                return ResourceManager.GetString("StartImport", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Import an existing configuration? (optional).
+        /// </summary>
+        public static string ImportConfigurationQuestion {
+            get {
+                return ResourceManager.GetString("ImportConfigurationQuestion", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Select a previously downloaded game configuration json file - use the &quot;Full configuration&quot; download (the complete configuration) - to restore it instead of creating a new configuration. The selected game version is still used for the server definitions.
+        /// </summary>
+        public static string ImportConfigurationHint {
+            get {
+                return ResourceManager.GetString("ImportConfigurationHint", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Choose file.
+        /// </summary>
+        public static string ChooseFile {
+            get {
+                return ResourceManager.GetString("ChooseFile", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No file selected.
+        /// </summary>
+        public static string NoFileSelected {
+            get {
+                return ResourceManager.GetString("NoFileSelected", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Stop.
         /// </summary>

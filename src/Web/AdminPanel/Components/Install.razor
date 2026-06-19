@@ -47,24 +47,43 @@ else
             <input type="range" class="form-range" min="1" max="10" value="@this.GameServerCount" id="gameServerCount" @oninput="this.OnGameServerCountChange">
         </div>
     </p>
+    @if (this.ImportConfigurationFile is null)
+    {
+        <p>
+            <h2>@Resources.TestAccountsQuestion</h2>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="testAccountsCheck" @oninput="this.OnTestAccountsChange">
+                <label class="form-check-label" for="testAccountsCheck">
+                    @Resources.YesCreateTestAccounts
+                </label>
+            </div>
+        </p>
+    }
+
     <p>
-        <h2>@Resources.TestAccountsQuestion</h2>
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="testAccountsCheck" @oninput="this.OnTestAccountsChange">
-            <label class="form-check-label" for="testAccountsCheck">
-                @Resources.YesCreateTestAccounts
-            </label>
+        <h2>@Resources.ImportConfigurationQuestion</h2>
+        <div>
+            <label for="importConfigurationFile" class="form-label">@Resources.ImportConfigurationHint</label>
+            <div class="d-flex align-items-center gap-2">
+                @* Hide the native file input (its "no file chosen" text is rendered by the browser in its own locale) and use a custom button plus our own file-name label instead. *@
+                <label class="btn btn-secondary mb-0" for="importConfigurationFile">@Resources.ChooseFile</label>
+                <BlazorInputFile.InputFile id="importConfigurationFile" style="display:none" OnChange="this.OnImportFileSelected" />
+                <span>@(this.ImportConfigurationFile?.Name ?? Resources.NoFileSelected)</span>
+            </div>
         </div>
     </p>
 
     <p>
+        @{
+            var installCaption = this.ImportConfigurationFile is null ? Resources.StartInstall : Resources.StartImport;
+        }
         @if (this.CurrentConnections == 0)
         {
-            <button class="btn btn-primary" @onclick="this.StartInstallationAsync">@Resources.StartInstall</button>
+            <button class="btn btn-primary" @onclick="this.StartInstallationAsync">@installCaption</button>
         }
         else
         {
-            <button class="btn btn-primary disabled">@Resources.StartInstall</button>
+            <button class="btn btn-primary disabled">@installCaption</button>
         }
     </p>
 }

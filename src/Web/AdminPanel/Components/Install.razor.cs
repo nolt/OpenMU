@@ -4,6 +4,8 @@
 
 namespace MUnique.OpenMU.Web.AdminPanel.Components;
 
+using System.IO;
+using BlazorInputFile;
 using Microsoft.AspNetCore.Components;
 using MUnique.OpenMU.Interfaces;
 using MUnique.OpenMU.Persistence.Initialization;
@@ -28,6 +30,14 @@ public sealed partial class Install
     /// Gets or sets a value indicating whether to create test accounts.
     /// </summary>
     public bool CreateTestAccounts { get; set; }
+
+    /// <summary>
+    /// Gets or sets the optional configuration file to import instead of initializing a new
+    /// configuration. The file is expected to be a previously downloaded game configuration json.
+    /// </summary>
+    public IFileListEntry? ImportConfigurationFile { get; set; }
+
+    private byte[]? _importConfigurationData;
 
     /// <summary>
     /// Gets a value indicating whether this instance is installing.
@@ -75,13 +85,47 @@ public sealed partial class Install
         await this.InvokeAsync(this.StateHasChanged).ConfigureAwait(false);
         try
         {
-            await this.SetupService.CreateDatabaseAsync(() => this.SelectedVersion!.CreateInitialDataAsync((byte)this.GameServerCount, this.CreateTestAccounts)).ConfigureAwait(false);
+            if (this._importConfigurationData is { } configurationData)
+            {
+                await this.ImportConfigurationAsync(configurationData).ConfigureAwait(false);
+            }
+            else
+            {
+                await this.SetupService.CreateDatabaseAsync(() => this.SelectedVersion!.CreateInitialDataAsync((byte)this.GameServerCount, this.CreateTestAccounts)).ConfigureAwait(false);
+            }
         }
         finally
         {
             this.IsInstalled = true;
             this.IsInstalling = false;
         }
+    }
+
+    private async Task ImportConfigurationAsync(byte[] configurationData)
+    {
+        using var memoryStream = new MemoryStream(configurationData);
+        await this.SetupService.ImportGameConfigurationAsync(memoryStream, this.SelectedVersion!.Key, (byte)this.GameServerCount).ConfigureAwait(false);
+    }
+
+    private async Task OnImportFileSelected(IFileListEntry[] files)
+    {
+        var file = files.FirstOrDefault();
+        if (file is null)
+        {
+            this.ImportConfigurationFile = null;
+            this._importConfigurationData = null;
+            return;
+        }
+
+        // Read the file content immediately, while the input element is still attached.
+        // BlazorInputFile streams the data from the DOM element through JS interop. If we
+        // deferred the read until "Start import", the re-render caused by setting
+        // ImportConfigurationFile (which hides the test accounts option) would detach the
+        // element and the stream would fail with a "_blazorFilesById" null reference.
+        using var memoryStream = new MemoryStream();
+        await file.Data.CopyToAsync(memoryStream).ConfigureAwait(false);
+        this._importConfigurationData = memoryStream.ToArray();
+        this.ImportConfigurationFile = file;
     }
 
     private void OnSelectVersion(string key)
