@@ -4,7 +4,6 @@
 
 namespace MUnique.OpenMU.GameLogic.Offline;
 
-using MUnique.OpenMU.DataModel.Entities;
 using MUnique.OpenMU.GameLogic.MuHelper;
 using MUnique.OpenMU.GameLogic.Views;
 using MUnique.OpenMU.PlugIns;
@@ -36,22 +35,39 @@ public sealed class OfflinePlayer : Player
     public DateTime StartTimestamp { get; internal set; }
 
     /// <summary>
-    /// Initializes the offline player from captured references.
+    /// Initializes the offline player by loading its account and character freshly
+    /// into its own persistence context.
     /// </summary>
-    /// <param name="account">The account.</param>
-    /// <param name="character">The character.</param>
+    /// <param name="loginName">The account login name.</param>
+    /// <param name="characterName">The name of the character to continue playing.</param>
     /// <returns><c>true</c> if successfully started.</returns>
-    public async ValueTask<bool> InitializeAsync(Account account, Character character)
+    public async ValueTask<bool> InitializeAsync(string loginName, string characterName)
     {
         try
         {
             this.StartTimestamp = DateTime.UtcNow;
+
+            // Load the account freshly into this offline player's own persistence context
+            // instead of attaching the real player's entity graph from a now-disposed
+            // context. Re-using foreign entity instances corrupts EF change tracking and
+            // makes every SaveChanges fail, which loses all offline progress.
+            var account = await this.PersistenceContext.GetAccountByLoginNameAsync(loginName).ConfigureAwait(false);
+            if (account is null)
+            {
+                this.Logger.LogError("Offline player could not load account {LoginName}.", loginName);
+                return false;
+            }
+
             this.Account = account;
-            this.PersistenceContext.Attach(account);
 
             await this.AdvanceToCharacterSelectionStateAsync().ConfigureAwait(false);
 
-            await this.SetupCharacterAsync(character).ConfigureAwait(false);
+            await this.SetupCharacterAsync(characterName).ConfigureAwait(false);
+            if (this.SelectedCharacter is not { } selectedCharacter)
+            {
+                this.Logger.LogError("Offline player could not select character {CharacterName} for account {LoginName}.", characterName, loginName);
+                return false;
+            }
 
             await this.ClientReadyAfterMapChangeAsync().ConfigureAwait(false);
 
@@ -59,8 +75,8 @@ public sealed class OfflinePlayer : Player
 
             this.Logger.LogDebug(
                 "Offline player started for character {CharacterName} on map {Map} at {Position}.",
-                character.Name,
-                character.CurrentMap?.Name,
+                selectedCharacter.Name,
+                selectedCharacter.CurrentMap?.Name,
                 this.Position);
 
             return true;
@@ -107,16 +123,19 @@ public sealed class OfflinePlayer : Player
         await this.PlayerState.TryAdvanceToAsync(GameLogic.PlayerState.CharacterSelection).ConfigureAwait(false);
     }
 
-    private async ValueTask SetupCharacterAsync(Character character)
+    private async ValueTask SetupCharacterAsync(string characterName)
     {
-        // Add to context and set character.
+        var character = this.Account?.Characters.FirstOrDefault(c => c.Name.Equals(characterName));
+        if (character is null)
+        {
+            return;
+        }
+
+        // Add to context and set character. The character is already tracked by this
+        // player's own persistence context (loaded via GetAccountByLoginNameAsync), so
+        // it must not be attached again from a foreign context.
         await this.GameContext.AddPlayerAsync(this).ConfigureAwait(false);
         await this.SetSelectedCharacterAsync(character).ConfigureAwait(false);
-
-        if (this.SelectedCharacter is { } selectedCharacter)
-        {
-            this.PersistenceContext.Attach(selectedCharacter);
-        }
     }
 
     private void StartIntelligence()

@@ -31,9 +31,9 @@ public sealed class OfflinePlayerManager
     public async ValueTask<bool> StartAsync(Player realPlayer, string loginName)
     {
         var account = realPlayer.Account;
-        var character = realPlayer.SelectedCharacter;
+        var characterName = realPlayer.SelectedCharacter?.Name;
 
-        if (account is null || character is null)
+        if (account is null || characterName is null)
         {
             return false;
         }
@@ -57,9 +57,9 @@ public sealed class OfflinePlayerManager
         {
             await this.TransitionToOfflineAsync(realPlayer, loginName).ConfigureAwait(false);
 
-            if (!await sentinel.InitializeAsync(account, character).ConfigureAwait(false))
+            if (!await sentinel.InitializeAsync(loginName, characterName).ConfigureAwait(false))
             {
-                this._activePlayers.TryRemove(loginName, out _);
+                await this.RemoveAndDisposeAsync(loginName, sentinel).ConfigureAwait(false);
                 return false;
             }
 
@@ -67,7 +67,7 @@ public sealed class OfflinePlayerManager
         }
         catch
         {
-            this._activePlayers.TryRemove(loginName, out _);
+            await this.RemoveAndDisposeAsync(loginName, sentinel).ConfigureAwait(false);
             throw;
         }
     }
@@ -81,6 +81,11 @@ public sealed class OfflinePlayerManager
         if (this._activePlayers.TryRemove(loginName, out var offlinePlayer))
         {
             await offlinePlayer.StopAsync().ConfigureAwait(false);
+
+            // Dispose so the offline player's persistence context is released. Offline
+            // players have no network connection, so the GameServer's disconnect handler
+            // (which normally disposes connected players) never runs for them.
+            await offlinePlayer.DisposeAsync().ConfigureAwait(false);
         }
     }
 

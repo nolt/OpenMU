@@ -38,6 +38,7 @@ public sealed class OfflinePlayerMuHelper : AsyncDisposable
     private readonly EventHandler<DeathInformation> _deathHandler;
 
     private Timer? _aiTimer;
+    private Task _tickTask = Task.CompletedTask;
     private bool _isDead;
 
     /// <summary>
@@ -78,7 +79,7 @@ public sealed class OfflinePlayerMuHelper : AsyncDisposable
         _ = this._petHandler.InitializeAsync();
 
         this._aiTimer ??= new Timer(
-            state => _ = this.SafeTickAsync(this._cts.Token),
+            state => this._tickTask = this.SafeTickAsync(this._cts.Token),
             null,
             TimeSpan.FromSeconds(1),
             TimeSpan.FromMilliseconds(500));
@@ -88,6 +89,12 @@ public sealed class OfflinePlayerMuHelper : AsyncDisposable
     protected override async ValueTask DisposeAsyncCore()
     {
         await this._cts.CancelAsync().ConfigureAwait(false);
+
+        // Wait for an in-flight tick to finish so it cannot mutate the character (and its
+        // persistence context) after the offline session has been torn down. SafeTickAsync
+        // swallows its own exceptions, so awaiting it here will not throw.
+        await this._tickTask.ConfigureAwait(false);
+
         await this._petHandler.StopAsync().ConfigureAwait(false);
         await base.DisposeAsyncCore().ConfigureAwait(false);
     }
