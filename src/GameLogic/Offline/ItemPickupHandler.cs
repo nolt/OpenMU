@@ -16,9 +16,28 @@ using MUnique.OpenMU.Interfaces;
 public sealed class ItemPickupHandler
 {
     private const byte MinPickupRange = 1;
-    private const byte JewelItemGroup = 14;
 
     private static readonly PickupItemAction PickupAction = new();
+
+    /// <summary>
+    /// The concrete (group, number) ids of jewels and upgrade stones. Item group 14 ("Pots and Misc")
+    /// mixes real jewels with potions, Ale, Devil's Eye/Key/Invitation and the Symbol of Kundun, so the
+    /// whole group must not be treated as jewels; otherwise the offline helper hoards those quest/event
+    /// items, diverging from the online MU Helper which only collects actual jewels.
+    /// </summary>
+    private static readonly HashSet<(byte Group, short Number)> JewelItemIds = new()
+    {
+        (12, 15), // Jewel of Chaos
+        (14, 13), // Jewel of Bless
+        (14, 14), // Jewel of Soul
+        (14, 16), // Jewel of Life
+        (14, 22), // Jewel of Creation
+        (14, 31), // Jewel of Guardian
+        (14, 41), // Gemstone
+        (14, 42), // Jewel of Harmony
+        (14, 43), // Lower refine stone
+        (14, 44), // Higher refine stone
+    };
 
     private readonly OfflinePlayer _player;
     private readonly IMuHelperSettings? _config;
@@ -93,7 +112,9 @@ public sealed class ItemPickupHandler
             return false;
         }
 
-        if (this._config.PickJewel && item.Definition?.Group == JewelItemGroup)
+        if (this._config.PickJewel
+            && item.Definition is { } jewelDefinition
+            && JewelItemIds.Contains((jewelDefinition.Group, jewelDefinition.Number)))
         {
             return true;
         }
