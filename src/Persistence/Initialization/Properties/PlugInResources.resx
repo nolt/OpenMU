@@ -456,6 +456,8 @@
   <data name="AddProtectionTalismansUpdatePlugIn_Description" xml:space="preserve"><value>This update adds the Talisman of Guardian, which protects from the death penalty, and the Talisman of Item Protection, which keeps the durability of the equipped items.</value></data>
   <data name="FixCrywolfGateTerrainUpdatePlugIn_Name" xml:space="preserve"><value>Fix the Crywolf entrance in Valley of Loren</value></data>
   <data name="FixCrywolfGateTerrainUpdatePlugIn_Description" xml:space="preserve"><value>Makes the south entry of the gate to Crywolf Fortress in Valley of Loren walkable, which players use outside of Castle Siege. The north entry and all other tiles are kept.</value></data>
+  <data name="AddTalismanOfResurrectionUpdatePlugIn_Name" xml:space="preserve"><value>Add the Talisman of Resurrection</value></data>
+  <data name="AddTalismanOfResurrectionUpdatePlugIn_Description" xml:space="preserve"><value>This update adds the Talisman of Resurrection, which respawns a dead player at the place of its death. The packages of the in-game shop which contain it are put on sale.</value></data>
   <data name="AddLuckyCoinUpdatePlugIn_Name" xml:space="preserve"><value>Add the lucky coin</value></data>
   <data name="AddLuckyCoinUpdatePlugIn_Description" xml:space="preserve"><value>This update adds the lucky coin, which is registered or exchanged for items at the NPC Delgado in Devias, and opens his lucky coin dialog.</value></data>
   <data name="AddGladiatorsHonorUpdatePlugIn_Name" xml:space="preserve">

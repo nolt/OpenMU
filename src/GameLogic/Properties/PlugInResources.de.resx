@@ -2016,6 +2016,18 @@
   <data name="ShowWarpListAfterEnterWorldPlugIn_Description" xml:space="preserve">
     <value>Teilt dem Client beim Betreten des Spiels mit, welche Warps der Spieler im Warp-Fenster auswählen kann.</value>
   </data>
+  <data name="TalismanOfResurrectionSpawnGatePlugIn_Name" xml:space="preserve">
+    <value>Talisman der Wiederbelebung</value>
+  </data>
+  <data name="TalismanOfResurrectionSpawnGatePlugIn_Description" xml:space="preserve">
+    <value>Lässt einen toten Spieler am Ort seines Todes wieder erscheinen, wenn er einen Talisman der Wiederbelebung trägt, der dabei verbraucht wird. Gilt nicht in Minispielen, Duellen und Gildenkriegen.</value>
+  </data>
+  <data name="TalismanOfResurrectionSpawnGatePlugInConfiguration_ItemGroup_Caption" xml:space="preserve">
+    <value>Gegenstandsgruppe</value>
+  </data>
+  <data name="TalismanOfResurrectionSpawnGatePlugInConfiguration_ItemNumber_Caption" xml:space="preserve">
+    <value>Gegenstandsnummer</value>
+  </data>
   <data name="LuckyCoinFeaturePlugIn_Name" xml:space="preserve">
     <value>Glücksmünzen-Event</value>
   </data>

@@ -2061,6 +2061,14 @@
   <data name="ShowWarpListAfterEnterWorldPlugIn_Description" xml:space="preserve">
     <value>Tells the client which warps the player can select in the warp window, when the player enters the game.</value>
   </data>
+  <data name="TalismanOfResurrectionSpawnGatePlugIn_Name" xml:space="preserve"><value>Talisman of Resurrection</value></data>
+  <data name="TalismanOfResurrectionSpawnGatePlugIn_Description" xml:space="preserve"><value>Respawns a dead player at the place of its death, when it carries a Talisman of Resurrection, which is used up. It doesn't apply in mini games, duels and guild wars.</value></data>
+  <data name="TalismanOfResurrectionSpawnGatePlugInConfiguration_ItemGroup_Caption" xml:space="preserve">
+    <value>Item group</value>
+  </data>
+  <data name="TalismanOfResurrectionSpawnGatePlugInConfiguration_ItemNumber_Caption" xml:space="preserve">
+    <value>Item number</value>
+  </data>
   <data name="LuckyCoinFeaturePlugIn_Name" xml:space="preserve">
     <value>Lucky coin event</value>
   </data>

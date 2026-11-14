@@ -489,6 +489,12 @@
   </data>
   <data name="FixCrywolfGateTerrainUpdatePlugIn_Name" xml:space="preserve"><value>修正罗兰峡谷通往狼魂要塞的入口</value></data>
   <data name="FixCrywolfGateTerrainUpdatePlugIn_Description" xml:space="preserve"><value>使罗兰峡谷中狼魂要塞传送门的南侧入口可以行走（攻城战以外的时间玩家使用该入口）。北侧入口及其他所有地块保持不变。</value></data>
+  <data name="AddTalismanOfResurrectionUpdatePlugIn_Name" xml:space="preserve">
+    <value>添加复活护身符</value>
+  </data>
+  <data name="AddTalismanOfResurrectionUpdatePlugIn_Description" xml:space="preserve">
+    <value>此更新添加复活护身符，使死亡的玩家在死亡地点复活。包含它的游戏内商城礼包将开始出售。</value>
+  </data>
   <data name="AddLuckyCoinUpdatePlugIn_Name" xml:space="preserve">
     <value>添加幸运币</value>
   </data>

@@ -2343,6 +2343,9 @@
   <data name="TalismanOfItemProtection" xml:space="preserve">
     <value>Talisman of Item Protection</value>
   </data>
+  <data name="TalismanOfResurrection" xml:space="preserve">
+    <value>Talisman of Resurrection</value>
+  </data>
   <data name="LuckyCoin" xml:space="preserve">
     <value>Lucky Coin</value>
   </data>

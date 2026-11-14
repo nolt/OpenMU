@@ -972,6 +972,12 @@
   <data name="FixCrywolfGateTerrainUpdatePlugIn_Description" xml:space="preserve">
     <value>Macht den südlichen Zugang zum Tor der Festung Crywolf im Tal von Loren begehbar, den Spieler außerhalb der Burgbelagerung benutzen. Der nördliche Zugang und alle anderen Felder bleiben unverändert.</value>
   </data>
+  <data name="AddTalismanOfResurrectionUpdatePlugIn_Name" xml:space="preserve">
+    <value>Talisman der Wiederbelebung hinzufügen</value>
+  </data>
+  <data name="AddTalismanOfResurrectionUpdatePlugIn_Description" xml:space="preserve">
+    <value>Dieses Update fügt den Talisman der Wiederbelebung hinzu, der einen toten Spieler am Ort seines Todes wieder erscheinen lässt. Die Pakete des In-Game-Shops, die ihn enthalten, werden zum Verkauf angeboten.</value>
+  </data>
   <data name="AddLuckyCoinUpdatePlugIn_Name" xml:space="preserve">
     <value>Glücksmünze hinzufügen</value>
   </data>
